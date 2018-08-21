@@ -3,3 +3,12 @@ git init
 git status
 
 create .gitignore file
+
+git add .
+
+git commit -m "comment about commit"
+
+create new github repo
+
+git remote add origin %RepoURL%
+git push -u origin master
