@@ -1,5 +1,6 @@
 const expect = require('expect')
 const request = require('supertest')
+const mongoose = require('mongoose')
 
 const {
     app
@@ -8,11 +9,12 @@ const {
     Todo,
     User
 } = require('./../models/models')
-
+const testid = mongoose.Types.ObjectId()
 const todos = [{
     text: "first"
 }, {
-    text: "second"
+    text: "second",
+    _id: testid
 }]
 
 beforeEach((done) => {
@@ -24,6 +26,63 @@ beforeEach((done) => {
             done()
         })
 
+})
+
+describe('GET /todo/:id', () => {
+    it('should return todo by id', (done) => {
+
+        request(app)
+            .get('/todo/'+testid.toString())
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.todo.text).toBe("second")
+                expect(res.body.todo._id).toBe(testid.toString())
+            })
+            .end((err, res) => {
+                if (err) {
+                    return done(err)
+                }
+                done()
+            })
+
+    })
+
+    it('should return 404 for non-existing or empty id', (done) => {
+
+        request(app)
+            .get('/todo/5b7c573fa21bca46884a92c8')
+            .expect(404)
+            .end((err, res) => {
+                if (err) {
+                    return done(err)
+                }
+            })
+
+        request(app)
+            .get('/todo/')
+            .expect(404)
+            .end((err, res) => {
+                if (err) {
+                    return done(err)
+                }
+                done()
+            })
+
+    })
+
+    it('should return 400 for invalid id', (done) => {
+
+        request(app)
+            .get('/todo/heyho')
+            .expect(400)
+            .end((err, res) => {
+                if (err) {
+                    return done(err)
+                }
+                done()
+            })
+
+    })
 })
 
 describe('GET /todos', () => {

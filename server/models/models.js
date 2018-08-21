@@ -36,7 +36,7 @@ let newEntry = (item, model) => {
     return new Promise(function(resolve, reject) {
         new model (item)
         .save().then((res) => {
-            console.log('saved entry', res)
+            // console.log('saved entry', res)
             resolve(res)
         }, (e) => {
             // console.log(e)

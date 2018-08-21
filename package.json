@@ -2,7 +2,7 @@
   "name": "udemy-mongodb",
   "version": "1.0.0",
   "description": "",
-  "main": "app.js",
+  "main": "server/server.js",
   "scripts": {
     "test": "mocha server/**/*.test.js",
     "test-watch": "nodemon --exec \"npm test\""
