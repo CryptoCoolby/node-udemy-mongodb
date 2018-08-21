@@ -1,11 +1,49 @@
 const expect = require('expect')
 const request = require('supertest')
 
-const {app} = require('./../server')
-const {Todo, User } = require('./../models/models')
+const {
+    app
+} = require('./../server')
+const {
+    Todo,
+    User
+} = require('./../models/models')
+
+const todos = [{
+    text: "first"
+}, {
+    text: "second"
+}]
 
 beforeEach((done) => {
-    Todo.deleteMany({}).then(() => done())
+    Todo.deleteMany({})
+        .then(() => {
+            return Todo.insertMany(todos)
+        })
+        .then(() => {
+            done()
+        })
+
+})
+
+describe('GET /todos', () => {
+    it('should list all todos', (done) => {
+
+        request(app)
+            .get('/todos')
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.todos[1].text).toBe("second")
+                expect(res.body.todos.length).toBe(2)
+            })
+            .end((err, res) => {
+                if (err) {
+                    return done(err)
+                }
+                done()
+            })
+
+    })
 })
 
 describe('POST /todos', () => {
@@ -14,7 +52,9 @@ describe('POST /todos', () => {
 
         request(app)
             .post('/todos')
-            .send({text})
+            .send({
+                text
+            })
             .expect(200)
             .expect((res) => {
                 expect(res.body.text).toBe(text)
@@ -25,11 +65,11 @@ describe('POST /todos', () => {
                 }
 
                 Todo.find().then((todos) => {
-                    expect(todos.length).toBe(1)
-                    expect(todos[0].text).toBe(text)
-                    done()
-                })
-                .catch(e => done(e))
+                        expect(todos.length).toBe(3)
+                        expect(todos[2].text).toBe(text)
+                        done()
+                    })
+                    .catch(e => done(e))
             })
     })
 
@@ -44,10 +84,10 @@ describe('POST /todos', () => {
                 }
                 expect(JSON.parse(res.text).name).toBe("ValidationError")
                 Todo.find().then((todos) => {
-                    expect(todos.length).toBe(0)
-                    done()
-                })
-                .catch(e => done(e))
+                        expect(todos.length).toBe(2)
+                        done()
+                    })
+                    .catch(e => done(e))
             })
 
     })
