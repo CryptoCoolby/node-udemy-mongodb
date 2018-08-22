@@ -32,7 +32,7 @@ describe('GET /todo/:id', () => {
     it('should return todo by id', (done) => {
 
         request(app)
-            .get('/todo/'+testid.toString())
+            .get('/todo/' + testid.toString())
             .expect(200)
             .expect((res) => {
                 expect(res.body.todo.text).toBe("second")
@@ -147,6 +147,72 @@ describe('POST /todos', () => {
                         done()
                     })
                     .catch(e => done(e))
+            })
+
+    })
+})
+
+describe('DELETE /todo/:id', () => {
+    it('should delete and return todo by id', (done) => {
+
+        request(app)
+            .delete('/todo/' + testid.toString())
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.todo.text).toBe("second")
+                expect(res.body.todo._id).toBe(testid.toString())
+            })
+            .end((err, res) => {
+                if (err) {
+                    return done(err)
+                }
+
+                Todo.find().then((todos) => {
+                        expect(todos.length).toBe(1)
+                        Todo.findById(testid).then((todo) => {
+                            expect(todo).toBe(null)
+                        })
+                    })
+                    .catch(e => done(e))
+
+                done()
+            })
+
+    })
+
+    it('should return 404 for non-existing or empty id', (done) => {
+
+        request(app)
+            .delete('/todo/5b7c573fa21bca46884a92c8')
+            .expect(404)
+            .end((err, res) => {
+                if (err) {
+                    return done(err)
+                }
+            })
+
+        request(app)
+            .delete('/todo/')
+            .expect(404)
+            .end((err, res) => {
+                if (err) {
+                    return done(err)
+                }
+                done()
+            })
+
+    })
+
+    it('should return 400 for invalid id', (done) => {
+
+        request(app)
+            .delete('/todo/heyho')
+            .expect(400)
+            .end((err, res) => {
+                if (err) {
+                    return done(err)
+                }
+                done()
             })
 
     })
