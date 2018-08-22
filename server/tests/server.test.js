@@ -85,6 +85,7 @@ describe('GET /todo/:id', () => {
     })
 })
 
+
 describe('GET /todos', () => {
     it('should list all todos', (done) => {
 
@@ -104,6 +105,7 @@ describe('GET /todos', () => {
 
     })
 })
+
 
 describe('POST /todos', () => {
     it('should create a new todo', (done) => {
@@ -151,6 +153,98 @@ describe('POST /todos', () => {
 
     })
 })
+
+
+describe('PATCH /todo/:id', () => {
+
+    it('should set todo to completed and add completion time', (done) => {
+
+        request(app)
+            .patch('/todo/' + testid.toString())
+            .send({
+                completed: true
+            })
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.completed).toBe(true)
+                expect(res.body.completedAt).toBeTruthy()
+                expect(res.body._id).toBe(testid.toString())
+            })
+            .end((err, res) => {
+                if (err) {
+                    return done(err)
+                }
+                done()
+            })
+
+    })
+
+    it('should set todo completed to false and remove completion time', (done) => {
+
+        request(app)
+            .patch('/todo/' + testid.toString())
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.completed).toBe(false)
+                expect(res.body.completedAt).toBeFalsy()
+                expect(res.body._id).toBe(testid.toString())
+            })
+            .end((err, res) => {
+                if (err) {
+                    return done(err)
+                }
+                done()
+            })
+
+    })
+
+    it('should return 404 for non-existing or empty id', (done) => {
+
+        request(app)
+            .patch('/todo/5b7c573fa21bca46884a92c8')
+            .send({
+                completed: true
+            })
+            .expect(404)
+            .end((err, res) => {
+                if (err) {
+                    return done(err)
+                }
+            })
+
+        request(app)
+            .patch('/todo/')
+            .send({
+                completed: true
+            })
+            .expect(404)
+            .end((err, res) => {
+                if (err) {
+                    return done(err)
+                }
+                done()
+            })
+
+    })
+
+    it('should return 400 for invalid id', (done) => {
+
+        request(app)
+            .patch('/todo/heyho')
+            .send({
+                completed: true
+            })
+            .expect(400)
+            .end((err, res) => {
+                if (err) {
+                    return done(err)
+                }
+                done()
+            })
+
+    })
+})
+
 
 describe('DELETE /todo/:id', () => {
     it('should delete and return todo by id', (done) => {
