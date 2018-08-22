@@ -42,6 +42,20 @@ app.get('/todo/:id', (req, res) => {
     })
 })
 
+app.delete('/todo/:id', (req, res) => {
+    Todo.findByIdAndDelete(req.params.id).then((todo) => {
+        if (todo) {
+            res.send({todo})
+        } else {
+            res.status(404).send()
+        }
+    }, (e) => {
+        res.status(400).send(e)
+    })
+})
+
+
+
 app.listen(port, console.log('started on port', port))
 
 // newEntry({text: 'constructor'}, Todo)
