@@ -162,11 +162,13 @@ describe('PATCH /todo/:id', () => {
         request(app)
             .patch('/todo/' + testid.toString())
             .send({
-                completed: true
+                completed: true,
+                text: "changedtext"
             })
             .expect(200)
             .expect((res) => {
                 expect(res.body.completed).toBe(true)
+                expect(res.body.text).toBe("changedtext")
                 expect(res.body.completedAt).toBeTruthy()
                 expect(res.body._id).toBe(testid.toString())
             })
