@@ -15,6 +15,9 @@ const port = process.env.PORT || 3000
 
 app.use(bodyParser.json())
 
+// ----------------------------------------------
+//      HANDLE TODO REQUESTS
+// ----------------------------------------------
 
 app.post('/todos', (req, res) => {
     newEntry(req.body, Todo)
@@ -25,7 +28,6 @@ app.post('/todos', (req, res) => {
     })
 })
 
-
 app.get('/todos', (req, res) => {
     Todo.find().then((todos) => {
         res.send({todos})
@@ -33,7 +35,6 @@ app.get('/todos', (req, res) => {
         res.status(400).send(e)
     })
 })
-
 
 app.get('/todo/:id', (req, res) => {
     Todo.findById(req.params.id).then((todo) => {
@@ -47,7 +48,6 @@ app.get('/todo/:id', (req, res) => {
     })
 })
 
-
 app.delete('/todo/:id', (req, res) => {
     Todo.findByIdAndDelete(req.params.id).then((todo) => {
         if (todo) {
@@ -59,7 +59,6 @@ app.delete('/todo/:id', (req, res) => {
         res.status(400).send(e)
     })
 })
-
 
 app.patch('/todo/:id', (req, res) => {
     if (!req.params) {
@@ -85,6 +84,24 @@ app.patch('/todo/:id', (req, res) => {
     })
 })
 
+// ----------------------------------------------
+//      USER MODEL
+// ----------------------------------------------
+
+app.post('/users', (req, res) => {
+    let body = _.pick(req.body, ['email','password'])
+    let user
+
+    newEntry(body, User).then((res) => {
+        user = res
+        return user.generateAuthToken()
+    }).then((token) => {
+        res.header('x-auth', token).send(user)
+    }).catch((e) => {
+        console.log(e)
+        res.status(400).send(e)
+    })
+})
 
 app.listen(port, console.log('started on port', port))
 

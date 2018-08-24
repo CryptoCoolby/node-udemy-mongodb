@@ -20,7 +20,7 @@ const todos = [{
 beforeEach((done) => {
     Todo.deleteMany({})
         .then(() => {
-            return Todo.insertMany(todos)
+            Todo.insertMany(todos)
         })
         .then(() => {
             done()
@@ -42,9 +42,8 @@ describe('GET /todo/:id', () => {
                 if (err) {
                     return done(err)
                 }
-                done()
             })
-
+        done()
     })
 
     it('should return 404 for non-existing or empty id', (done) => {
