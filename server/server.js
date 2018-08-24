@@ -5,6 +5,7 @@ const _ = require('lodash')
 
 const {mongoose} = require('./db/mongoose')
 const {User, Todo, newEntry} = require('./models/models')
+const {authenticate} = require('./middleware/authenticate')
 
 // mongoose.Promise = global.Promise
 // mongoose.connect('mongodb://localhost:27017/TodoApp', {useNewUrlParser: true})
@@ -85,7 +86,7 @@ app.patch('/todo/:id', (req, res) => {
 })
 
 // ----------------------------------------------
-//      USER MODEL
+//      HANDLE USER REQUESTS
 // ----------------------------------------------
 
 app.post('/users', (req, res) => {
@@ -102,6 +103,13 @@ app.post('/users', (req, res) => {
         res.status(400).send(e)
     })
 })
+
+
+app.get('/users/me', authenticate, (req, res) => {
+    res.send(req.user)
+})
+
+
 
 app.listen(port, console.log('started on port', port))
 

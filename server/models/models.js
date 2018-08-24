@@ -25,11 +25,6 @@ const Todo = mongoose.model('Todo', {
 })
 
 // ----------------------------------------------
-//      USER SCHEMA
-// ----------------------------------------------
-
-
-// ----------------------------------------------
 //      USER MODEL
 // ----------------------------------------------
 
@@ -61,6 +56,26 @@ let UserSchema = new mongoose.Schema({
         }
     }]
 })
+
+UserSchema.statics.findByToken = function (token) {
+    let User = this
+    let decoded
+
+    try {
+        decoded = jwt.verify(token, 'abc123')
+    } catch (e) {
+        // return new Promise((res, rej) => {
+        //     reject()
+        // })
+        return Promise.reject()
+    }
+
+    return User.findOne({
+        _id: decoded._id,
+        'tokens.token': token,
+        'tokens.access': 'auth'
+    })
+}
 
 UserSchema.methods.toJSON = function () {
     let user = this
