@@ -3,7 +3,7 @@ const mongoose = require('mongoose')
 mongoose.Promise = global.Promise;
 
 (async function () {
-    await mongoose.connect('mongodb://localhost:27017/TodoApp', {useNewUrlParser: true})
+    await mongoose.connect('mongodb://127.0.0.1:27017/TodoApp', {useNewUrlParser: true})
         .then((res) => {
             console.log('connected to local db')
         }, async function () {
