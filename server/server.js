@@ -2,6 +2,7 @@
 const bodyParser = require('body-parser')
 const {ObjectID} = require('mongodb')
 const _ = require('lodash')
+const bcrypt = require('bcryptjs')
 
 const {mongoose} = require('./db/mongoose')
 const {User, Todo, newEntry} = require('./models/models')
@@ -103,6 +104,24 @@ app.post('/users', (req, res) => {
     })
 })
 
+app.post('/users/login', (req, res) => {
+    let {email, password} = _.pick(req.body, ['email','password'])
+
+    User.findOne({email}).then((user) => {
+        if (!user) {
+            return res.status(401).send()
+        }
+        bcrypt.compare(password, user.password, (err, access) => {
+            if (access) {
+                return user.generateAuthToken().then((token) => {
+                    res.header('x-auth', token)
+                    .send(_.pick(user, ['email', '_id']))
+                })
+            }
+            res.status(401).send()
+        })
+    })
+})
 
 app.get('/users/me', authenticate, (req, res) => {
     res.send(req.user)
