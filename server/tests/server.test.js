@@ -9,6 +9,56 @@ const {populateTodos, testid, todos, users, populateUsers} = require('./seed/see
 beforeEach(populateUsers)
 beforeEach(populateTodos)
 
+describe('GET /users/login', () => {
+
+    it('should return email, id and auth token if valid login', (done) => {
+        request(app)
+            .post('/users/login')
+            .send({
+                email: 'crypto@coolby.com',
+                password: 'userOnePass'
+            })
+            .expect(200)
+            .expect((res) => {
+                User.findOne({email: 'crypto@coolby.com'}).then((user) => {
+                    expect(user.tokens[user.tokens.length - 1].token)
+                    .toBe(res.headers["x-auth"])
+                    expect(user.tokens[user.tokens.length - 1].access)
+                    .toBe('auth')
+                })
+                expect(res.body.email).toBe('crypto@coolby.com')
+            })
+            .end(done)
+    })
+
+    it('should return 401 if invalid login', (done) => {
+        request(app)
+            .post('/users/login')
+            .send({
+                email: 'crypto@coolby.com',
+                password: 'userOnePasss'
+            })
+            .expect(401)
+            .expect((res) => {
+                expect(res.body.email).toBeFalsy()
+                expect(res.headers["x-auth"]).toBeFalsy()
+            })
+
+        request(app)
+            .post('/users/login')
+            .send({
+                email: 'crypto@cooby.com',
+                password: 'userOnePass'
+            })
+            .expect(401)
+            .expect((res) => {
+                expect(res.body.email).toBeFalsy()
+                expect(res.headers["x-auth"]).toBeFalsy()
+            })
+            .end(done)
+    })
+})
+
 describe('GET /users/me', () => {
     it('should return user if authenticated', (done) => {
         request(app)
