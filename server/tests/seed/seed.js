@@ -6,6 +6,7 @@ const {Todo, User} = require('./../../models/models')
 const userOneId = new ObjectID()
 const userTwoId = new ObjectID()
 const testid = new ObjectID()
+const testid2 = new ObjectID()
 
 const users = [{
     _id: userOneId,
@@ -21,10 +22,13 @@ const users = [{
         password: 'userTwoPass'
 }]
 const todos = [{
-    text: "first"
+    _id: testid2,
+    text: "first",
+    _creator: userOneId
 }, {
+    _id: testid,
     text: "second",
-    _id: testid
+    _creator: userTwoId
 }]
 
 const populateTodos = (done) => {
