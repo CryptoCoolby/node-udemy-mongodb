@@ -216,10 +216,11 @@ describe('POST /users', () => {
 })
 
 describe('GET /todo/:id', () => {
-    it('should return todo by id', (done) => {
+    it('should return todo by id if authenticated', (done) => {
 
         request(app)
             .get('/todo/' + testid.toString())
+            .set('x-auth', users[1].tokens[0].token)
             .expect(200)
             .expect((res) => {
                 expect(res.body.todo.text).toBe("second")
@@ -229,14 +230,29 @@ describe('GET /todo/:id', () => {
                 if (err) {
                     return done(err)
                 }
+                done()
             })
-        done()
+    })
+
+    it('should not return other users\' todo', (done) => {
+
+        request(app)
+            .get('/todo/' + testid.toString())
+            .set('x-auth', users[0].tokens[0].token)
+            .expect(404)
+            .end((err, res) => {
+                if (err) {
+                    return done(err)
+                }
+                done()
+            })
     })
 
     it('should return 404 for non-existing or empty id', (done) => {
 
         request(app)
             .get('/todo/5b7c573fa21bca46884a92c8')
+            .set('x-auth', users[0].tokens[0].token)
             .expect(404)
             .end((err, res) => {
                 if (err) {
@@ -246,6 +262,7 @@ describe('GET /todo/:id', () => {
 
         request(app)
             .get('/todo/')
+            .set('x-auth', users[0].tokens[0].token)
             .expect(404)
             .end((err, res) => {
                 if (err) {
@@ -260,6 +277,7 @@ describe('GET /todo/:id', () => {
 
         request(app)
             .get('/todo/heyho')
+            .set('x-auth', users[0].tokens[0].token)
             .expect(400)
             .end((err, res) => {
                 if (err) {
@@ -347,6 +365,7 @@ describe('PATCH /todo/:id', () => {
 
         request(app)
             .patch('/todo/' + testid.toString())
+            
             .send({
                 completed: true,
                 text: "changedtext"
@@ -434,14 +453,42 @@ describe('PATCH /todo/:id', () => {
 })
 
 describe('DELETE /todo/:id', () => {
+
+    it('should not delete if not authenticated', (done) => {
+
+        request(app)
+            .delete('/todo/' + testid.toString())
+            .set('x-auth', users[0].tokens[0].token)
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.todo.n).toBe(0)
+            })
+            .end((err, res) => {
+                if (err) {
+                    return done(err)
+                }
+
+                Todo.find().then((todos) => {
+                        expect(todos.length).toBe(2)
+                        Todo.findById(testid).then((todo) => {
+                            expect(todo).toBeTruthy()
+                        })
+                    })
+                    .catch(e => done(e))
+
+                done()
+            })
+
+    })
+
     it('should delete and return todo by id', (done) => {
 
         request(app)
             .delete('/todo/' + testid.toString())
+            .set('x-auth', users[1].tokens[0].token)
             .expect(200)
             .expect((res) => {
-                expect(res.body.todo.text).toBe("second")
-                expect(res.body.todo._id).toBe(testid.toString())
+                expect(res.body.todo.n).toBe(1)
             })
             .end((err, res) => {
                 if (err) {
@@ -465,22 +512,26 @@ describe('DELETE /todo/:id', () => {
 
         request(app)
             .delete('/todo/5b7c573fa21bca46884a92c8')
-            .expect(404)
+            .set('x-auth', users[1].tokens[0].token)
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.todo.n).toBe(0)
+            })
             .end((err, res) => {
-                if (err) {
-                    return done(err)
-                }
+                if (err) return done(err)
+                request(app)
+                    .delete('/todo/')
+                    .set('x-auth', users[1].tokens[0].token)
+                    .expect(404)
+                    .end((err, res) => {
+                        if (err) {
+                            return done(err)
+                        }
+                        done()
+                    })
+
             })
 
-        request(app)
-            .delete('/todo/')
-            .expect(404)
-            .end((err, res) => {
-                if (err) {
-                    return done(err)
-                }
-                done()
-            })
 
     })
 
@@ -488,6 +539,7 @@ describe('DELETE /todo/:id', () => {
 
         request(app)
             .delete('/todo/heyho')
+            .set('x-auth', users[1].tokens[0].token)
             .expect(400)
             .end((err, res) => {
                 if (err) {
