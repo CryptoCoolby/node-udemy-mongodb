@@ -90,6 +90,14 @@ app.patch('/todo/:id', (req, res) => {
 //      HANDLE USER REQUESTS
 // ----------------------------------------------
 
+app.delete('/users/me/logout', authenticate, (req, res) => {
+    req.user.removeToken(req.token).then(() => {
+        res.status(200).send()
+    }, () => {
+        res.status(400).send()
+    })
+})
+
 app.post('/users', (req, res) => {
     let body = _.pick(req.body, ['email','password'])
     let user
