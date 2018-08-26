@@ -9,6 +9,30 @@ const {populateTodos, testid, todos, users, populateUsers} = require('./seed/see
 beforeEach(populateUsers)
 beforeEach(populateTodos)
 
+describe('DELETE /users/me/logout', () => {
+
+    it('should get 200 if logged in and 401 if logged out', (done) => {
+        let token = users[0].tokens[0].token.toString()
+        request(app)
+            .delete('/users/me/logout')
+            .set('x-auth', token)
+            .expect(200)
+            .end((err, res) => {
+                if (err) return done(err)
+                request(app)
+                    .delete('/users/me/logout')
+                    .set('x-auth', token)
+                    .expect(401)
+                    .end((err, res) => {
+                        if (err) return done(err)
+                        done()
+                    })
+            })
+
+    })
+
+})
+
 describe('GET /users/login', () => {
 
     it('should return email, id and auth token if valid login', (done) => {
