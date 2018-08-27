@@ -4,6 +4,7 @@ const {ObjectID} = require('mongodb')
 const _ = require('lodash')
 const bcrypt = require('bcryptjs')
 
+require('./config/config.js')
 const {mongoose} = require('./db/mongoose')
 const {User, Todo, newEntry} = require('./models/models')
 const {authenticate} = require('./middleware/authenticate')
