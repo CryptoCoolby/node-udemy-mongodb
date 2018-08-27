@@ -33,7 +33,7 @@ const Todo = mongoose.model('Todo', {
 //      USER MODEL
 // ----------------------------------------------
 
-let UserSchema = new mongoose.Schema({
+let UserSchema = new mongoose.Schema({ 
     email: {
         type: String,
         minlength: 3,
