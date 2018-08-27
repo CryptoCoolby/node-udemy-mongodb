@@ -361,76 +361,107 @@ describe('POST /todos', () => {
 
 describe('PATCH /todo/:id', () => {
 
-    it('should set todo to completed and add completion time', (done) => {
+    it('should change todo text, set todo to completed and add completion time then set to uncompleted and remove completion time', (done) => {
 
         request(app)
             .patch('/todo/' + testid.toString())
-            
+            .set('x-auth', users[1].tokens[0].token)
             .send({
                 completed: true,
                 text: "changedtext"
             })
             .expect(200)
             .expect((res) => {
-                expect(res.body.completed).toBe(true)
-                expect(res.body.text).toBe("changedtext")
-                expect(res.body.completedAt).toBeTruthy()
-                expect(res.body._id).toBe(testid.toString())
+                expect(res.body.n).toBe(1)
+                expect(res.body.nModified).toBe(1)
+                expect(res.body.ok).toBe(1)
             })
             .end((err, res) => {
                 if (err) {
                     return done(err)
                 }
-                done()
+                request(app)
+                    .get('/todo/' + testid.toString())
+                    .set('x-auth', users[1].tokens[0].token)
+                    .expect(200)
+                    .expect((res) => {
+                        expect(res.body.todo.completed).toBe(true)
+                        expect(res.body.todo.text).toBe("changedtext")
+                        expect(res.body.todo.completedAt).toBeTruthy()
+                        expect(res.body.todo._id).toBe(testid.toString())
+                    })
+                    .end((err, res) => {
+                        if (err) {
+                            return done(err)
+                        }
+                        request(app)
+                            .patch('/todo/' + testid.toString())
+                            .set('x-auth', users[1].tokens[0].token)
+                            .expect(200)
+                            .expect((res) => {
+                                expect(res.body.n).toBe(1)
+                                expect(res.body.nModified).toBe(1)
+                                expect(res.body.ok).toBe(1)
+                            })
+                            .end((err, res) => {
+                                if (err) {
+                                    return done(err)
+                                }
+                                request(app)
+                                    .get('/todo/' + testid.toString())
+                                    .set('x-auth', users[1].tokens[0].token)
+                                    .expect(200)
+                                    .expect((res) => {
+                                        expect(res.body.todo.completed).toBe(false)
+                                        expect(res.body.todo.text).toBe("changedtext")
+                                        expect(res.body.todo.completedAt).toBeFalsy()
+                                        expect(res.body.todo._id).toBe(testid.toString())
+                                    })
+                                    .end((err, res) => {
+                                        if (err) {
+                                            return done(err)
+                                        }
+                                        done()
+                                    })
+                            })
+                    })
             })
 
     })
 
-    it('should set todo completed to false and remove completion time', (done) => {
-
-        request(app)
-            .patch('/todo/' + testid.toString())
-            .expect(200)
-            .expect((res) => {
-                expect(res.body.completed).toBe(false)
-                expect(res.body.completedAt).toBeFalsy()
-                expect(res.body._id).toBe(testid.toString())
-            })
-            .end((err, res) => {
-                if (err) {
-                    return done(err)
-                }
-                done()
-            })
-
-    })
-
-    it('should return 404 for non-existing or empty id', (done) => {
+    it('should return not modified for non-existing or 404 for empty id', (done) => {
 
         request(app)
             .patch('/todo/5b7c573fa21bca46884a92c8')
+            .set('x-auth', users[1].tokens[0].token)
             .send({
                 completed: true
             })
-            .expect(404)
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.n).toBe(0)
+                expect(res.body.nModified).toBe(0)
+                expect(res.body.ok).toBe(1)
+            })
             .end((err, res) => {
                 if (err) {
                     return done(err)
                 }
+                request(app)
+                    .patch('/todo/')
+                    .set('x-auth', users[1].tokens[0].token)
+                    .send({
+                        completed: true
+                    })
+                    .expect(404)
+                    .end((err, res) => {
+                        if (err) {
+                            return done(err)
+                        }
+                        done()
+                    })
             })
 
-        request(app)
-            .patch('/todo/')
-            .send({
-                completed: true
-            })
-            .expect(404)
-            .end((err, res) => {
-                if (err) {
-                    return done(err)
-                }
-                done()
-            })
 
     })
 
@@ -438,10 +469,28 @@ describe('PATCH /todo/:id', () => {
 
         request(app)
             .patch('/todo/heyho')
+            .set('x-auth', users[1].tokens[0].token)
             .send({
                 completed: true
             })
             .expect(400)
+            .end((err, res) => {
+                if (err) {
+                    return done(err)
+                }
+                done()
+            })
+
+    })
+
+    it('should return 401 if unauthorized', (done) => {
+
+        request(app)
+            .patch('/todo/' + testid.toString())
+            .send({
+                completed: true
+            })
+            .expect(401)
             .end((err, res) => {
                 if (err) {
                     return done(err)
